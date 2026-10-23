@@ -12,7 +12,7 @@ import { useYearCounts } from './hooks/useYearCounts'
 import './App.css'
 
 const MIN_YEAR = 1938
-const MAX_YEAR = 2025
+const MAX_YEAR = 2026
 const YEARS = Array.from({ length: MAX_YEAR - MIN_YEAR + 1 }, (_, i) => MAX_YEAR - i)
 
 function App() {
