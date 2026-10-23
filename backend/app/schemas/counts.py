@@ -79,3 +79,20 @@ class SpeciesLocationCountsResponse(BaseModel):
     species_code: str
     species_name: str
     locations: list[LocationYearSeries]
+
+
+class YearlyTotalPoint(BaseModel):
+    year: int
+    total: int = Field(description="Total fish count for the year at this dam")
+
+
+class LocationYearlyTotals(BaseModel):
+    code: str
+    name: str
+    totals: list[YearlyTotalPoint]
+
+
+class SpeciesYearlyTotalsResponse(BaseModel):
+    species_code: str
+    species_name: str
+    locations: list[LocationYearlyTotals]

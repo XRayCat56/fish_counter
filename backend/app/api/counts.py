@@ -10,6 +10,7 @@ from app.schemas.counts import (
     SpeciesListResponse,
     SpeciesLocationCountsResponse,
     SpeciesTotalsResponse,
+    SpeciesYearlyTotalsResponse,
     YearCountsResponse,
 )
 from app.services.counts import (
@@ -20,6 +21,7 @@ from app.services.counts import (
     get_species_list,
     get_species_location_counts_for_year,
     get_species_totals_for_year,
+    get_species_yearly_totals_by_location,
 )
 
 router = APIRouter(prefix="/api", tags=["counts"])
@@ -106,4 +108,22 @@ async def read_species_location_counts_for_year(
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(
             status_code=500, detail="Failed to load species counts by dam"
+        ) from exc
+
+
+@router.get(
+    "/species/{species_code}/yearly-totals",
+    response_model=SpeciesYearlyTotalsResponse,
+)
+async def read_species_yearly_totals_by_location(
+    species_code: str = Path(..., min_length=1, max_length=64),
+    db: AsyncSession = Depends(get_db),
+) -> SpeciesYearlyTotalsResponse:
+    try:
+        return await get_species_yearly_totals_by_location(db, species_code)
+    except SpeciesNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Species not found") from exc
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(
+            status_code=500, detail="Failed to load yearly totals by dam"
         ) from exc

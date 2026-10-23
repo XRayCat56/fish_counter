@@ -9,6 +9,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Home', end: true },
   { to: '/species-by-dam', label: 'Species by Dam', end: false },
+  { to: '/yearly-totals-by-dam', label: 'Yearly Totals by Dam', end: false },
 ]
 
 export function SideNav() {
