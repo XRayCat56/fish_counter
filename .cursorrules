@@ -1,0 +1,61 @@
+# Full-Stack Project Rules (FastAPI & React/TypeScript)
+
+## 1. Core Stack & Architecture
+- **Backend:** Python 3.11+, FastAPI, Pydantic v2, SQLAlchemy 2.0 (Async), Alembic, Pytest.
+- **Frontend:** TypeScript, React, Vite / Next.js (as applicable), Tailwind CSS.
+- **Monorepo Structure:**
+  - `backend/`: FastAPI application code and migrations.
+  - `frontend/`: React single-page application or SSR components.
+
+---
+
+## 2. Backend Rules (FastAPI / Python)
+
+### Asynchronous Programming
+- Use `async def` for all path operations, database I/O, and external HTTP calls.
+- Use standard `def` only for CPU-bound utility functions or synchronous third-party SDKs (offload via threadpool if needed).
+- Always use asynchronous database sessions and drivers (e.g., `asyncpg`).
+
+### Pydantic v2 & Data Validation
+- Strictly use **Pydantic v2** syntax (`model_dump()`, `model_dump_json()`, `@field_validator`, `@model_validator(mode="after")`).
+- Keep request and response DTO schemas strictly separated from SQLAlchemy database models. Never return raw ORM models from path operations.
+
+### Dependency Injection & Structure
+- Leverage FastAPI's `Depends` for managing database sessions, authentication, and service layer instantiation.
+- Follow a modular layered structure (`api/`, `services/`, `models/`, `schemas/`, `core/`).
+
+### Quality & Type Hinting
+- Every function, method, and variable must be fully type-hinted. Avoid `Any` wherever possible.
+- Use Ruff for linting/formatting and Mypy for strict type checking.
+
+---
+
+## 3. Frontend Rules (React / TypeScript)
+
+### TypeScript Standards
+- **Strict Mode:** Absolutely no use of `any`. Use proper interfaces, types, or generics.
+- Avoid type assertions (`as Type`) unless strictly necessary; use type guards instead.
+
+### Component Architecture & Hooks
+- Write modular, functional React components. Keep components small and focused on a single responsibility.
+- Custom logic, data fetching, and state management must be extracted into custom hooks (e.g., `useAuth`, `useUsers`).
+- Prefer server-side rendering (e.g., Next.js App Router) or modern state management libraries (TanStack Query/Zustand) over messy global contexts for server data.
+
+### Styling & UI
+- Use Tailwind CSS for component styling. Keep class strings clean and readable (use utility helpers like `clsx` or `tailwind-merge` if needed).
+
+---
+
+## 4. Full-Stack Integration & Guidelines
+
+### API Contracts & Types
+- Ensure data contracts are synchronized. Pydantic response models on the backend should map cleanly to TypeScript interfaces/types on the frontend.
+- Do not hardcode API base URLs; always configure them via environment variables (`VITE_API_URL` or `NEXT_PUBLIC_API_URL`).
+
+### Error Handling & Logging
+- **Backend:** Raise standardized `HTTPException` codes and catch domain-specific errors in central exception handlers. Use structured logging.
+- **Frontend:** Handle API errors gracefully with user-friendly toast notifications or inline error states, wrapping async calls in proper try/catch blocks.
+
+### Testing
+- **Backend:** Write unit and integration tests using `pytest` and `httpx.AsyncClient`.
+- **Frontend:** Test component rendering and user interactions using Vitest / React Testing Library.
