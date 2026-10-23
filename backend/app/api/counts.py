@@ -1,3 +1,5 @@
+from datetime import date
+
 from fastapi import APIRouter, Depends, HTTPException, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,7 +20,7 @@ from app.services.counts import (
 router = APIRouter(prefix="/api", tags=["counts"])
 
 MIN_YEAR = 1938
-MAX_YEAR = 2025
+MAX_YEAR = date.today().year
 
 
 @router.get("/counts/{year}", response_model=YearCountsResponse)
