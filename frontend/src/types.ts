@@ -63,3 +63,25 @@ export type MonthlyChartRow = {
   month: string
   [speciesCode: string]: string | number
 }
+
+export interface SpeciesInfo {
+  code: string
+  name: string
+}
+
+export interface SpeciesListResponse {
+  species: SpeciesInfo[]
+}
+
+export interface LocationYearSeries {
+  code: string
+  name: string
+  counts: DailyCountPoint[]
+}
+
+export interface SpeciesLocationCountsResponse {
+  year: number
+  species_code: string
+  species_name: string
+  locations: LocationYearSeries[]
+}

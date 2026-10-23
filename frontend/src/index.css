@@ -24,7 +24,7 @@
 }
 
 #root {
-  width: min(1100px, 100%);
+  width: min(1360px, 100%);
   margin: 0 auto;
   min-height: 100svh;
   display: flex;

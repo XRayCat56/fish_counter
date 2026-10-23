@@ -1,8 +1,14 @@
-import type { ChartRow, MonthlyChartRow, SpeciesMonthlySeries, SpeciesYearSeries } from '../types'
+import type { ChartRow, DailyCountPoint, MonthlyChartRow, SpeciesMonthlySeries } from '../types'
 
 const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-export function toChartRows(species: SpeciesYearSeries[]): ChartRow[] {
+/** Any series of daily points keyed by a code (species or dam location). */
+interface DailySeries {
+  code: string
+  counts: DailyCountPoint[]
+}
+
+export function toChartRows(species: DailySeries[]): ChartRow[] {
   const byDate = new Map<string, ChartRow>()
 
   for (const series of species) {

@@ -9,11 +9,8 @@ import { useLocationTotals } from './hooks/useLocationTotals'
 import { useMonthlyCounts } from './hooks/useMonthlyCounts'
 import { useSpeciesTotals } from './hooks/useSpeciesTotals'
 import { useYearCounts } from './hooks/useYearCounts'
+import { MAX_YEAR, YEARS } from './constants/years'
 import './App.css'
-
-const MIN_YEAR = 1938
-const MAX_YEAR = 2026
-const YEARS = Array.from({ length: MAX_YEAR - MIN_YEAR + 1 }, (_, i) => MAX_YEAR - i)
 
 function App() {
   const [year, setYear] = useState(MAX_YEAR)
