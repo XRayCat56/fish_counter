@@ -1,4 +1,11 @@
-import type { ChartRow, DailyCountPoint, MonthlyChartRow, SpeciesMonthlySeries } from '../types'
+import type {
+  ChartRow,
+  DailyCountPoint,
+  LocationYearlyTotals,
+  MonthlyChartRow,
+  SpeciesMonthlySeries,
+  YearlyChartRow,
+} from '../types'
 
 const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -51,4 +58,19 @@ export function toMonthlyChartRows(species: SpeciesMonthlySeries[]): MonthlyChar
 
 export function formatCount(value: number): string {
   return value.toLocaleString('en-US')
+}
+
+/** Pivot per-dam yearly totals into one row per year. Years a dam lacks data for are left out of that row. */
+export function toYearlyChartRows(locations: LocationYearlyTotals[]): YearlyChartRow[] {
+  const byYear = new Map<number, YearlyChartRow>()
+
+  for (const location of locations) {
+    for (const point of location.totals) {
+      const row = byYear.get(point.year) ?? { year: point.year }
+      row[location.code] = point.total
+      byYear.set(point.year, row)
+    }
+  }
+
+  return Array.from(byYear.values()).sort((a, b) => a.year - b.year)
 }

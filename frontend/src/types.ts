@@ -85,3 +85,26 @@ export interface SpeciesLocationCountsResponse {
   species_name: string
   locations: LocationYearSeries[]
 }
+
+export interface YearlyTotalPoint {
+  year: number
+  total: number
+}
+
+export interface LocationYearlyTotals {
+  code: string
+  name: string
+  totals: YearlyTotalPoint[]
+}
+
+export interface SpeciesYearlyTotalsResponse {
+  species_code: string
+  species_name: string
+  locations: LocationYearlyTotals[]
+}
+
+/** One row per year for the Recharts yearly-totals line chart. */
+export type YearlyChartRow = {
+  year: number
+  [locationCode: string]: number
+}

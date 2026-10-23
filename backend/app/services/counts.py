@@ -21,7 +21,10 @@ from app.schemas.counts import (
     SpeciesTotal,
     SpeciesTotalsResponse,
     SpeciesYearSeries,
+    SpeciesYearlyTotalsResponse,
+    LocationYearlyTotals,
     YearCountsResponse,
+    YearlyTotalPoint,
 )
 
 
@@ -240,6 +243,56 @@ async def get_species_location_counts_for_year(
         species_name=species_name,
         locations=[
             LocationYearSeries(code=code, name=name, counts=points)
+            for (code, name), points in grouped.items()
+        ],
+    )
+
+
+async def get_species_yearly_totals_by_location(
+    db: AsyncSession, species_code: str
+) -> SpeciesYearlyTotalsResponse:
+    """Return yearly total counts per dam location for one species.
+
+    Covers every year with data. Locations with no rows are omitted and are
+    ordered downstream to upstream.
+    """
+    species_row = (
+        await db.execute(
+            select(Species.code, Species.name).where(Species.code == species_code)
+        )
+    ).one_or_none()
+    if species_row is None:
+        raise SpeciesNotFoundError(species_code)
+    species_name: str = species_row.name
+
+    year_expr = extract("year", DailyCount.count_date)
+    stmt = (
+        select(
+            Location.code,
+            Location.name,
+            year_expr.label("year"),
+            func.sum(DailyCount.fish_count).label("yearly_total"),
+        )
+        .join(Location, Location.id == DailyCount.location_id)
+        .join(Species, Species.id == DailyCount.species_id)
+        .join(CountClass, CountClass.id == DailyCount.class_id)
+        .where(CountClass.code == "total", Species.code == species_code)
+        .group_by(Location.code, Location.name, Location.sort_order, year_expr)
+        .order_by(Location.sort_order, year_expr)
+    )
+    rows = (await db.execute(stmt)).all()
+
+    grouped: dict[tuple[str, str], list[YearlyTotalPoint]] = {}
+    for code, name, year, yearly_total in rows:
+        grouped.setdefault((code, name), []).append(
+            YearlyTotalPoint(year=int(year), total=int(yearly_total))
+        )
+
+    return SpeciesYearlyTotalsResponse(
+        species_code=species_code,
+        species_name=species_name,
+        locations=[
+            LocationYearlyTotals(code=code, name=name, totals=points)
             for (code, name), points in grouped.items()
         ],
     )

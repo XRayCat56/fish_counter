@@ -4,6 +4,7 @@ import type {
   SpeciesListResponse,
   SpeciesLocationCountsResponse,
   SpeciesTotalsResponse,
+  SpeciesYearlyTotalsResponse,
   YearCountsResponse,
 } from '../types'
 
@@ -53,5 +54,14 @@ export function fetchSpeciesLocationCounts(
   return fetchJson(
     `/api/counts/${year}/species/${encodeURIComponent(speciesCode)}/locations`,
     `Failed to load ${speciesCode} counts for ${year}`,
+  )
+}
+
+export function fetchSpeciesYearlyTotals(
+  speciesCode: string,
+): Promise<SpeciesYearlyTotalsResponse> {
+  return fetchJson(
+    `/api/species/${encodeURIComponent(speciesCode)}/yearly-totals`,
+    `Failed to load yearly totals for ${speciesCode}`,
   )
 }
