@@ -1,1 +1,4 @@
 .env
+data_grabber_db.py
+initial_tables.sql
+data_grabber.py

@@ -20,7 +20,11 @@ from psycopg2.extras import execute_values
 import requests
 
 URL = "https://www.fpc.org/adults/R_coeadultcount_runsum_salmon_results.php"
+# Inclusive. range() stops before its end, so the loop uses END_YEAR + 1.
 END_YEAR = 2026
+# Set to a year (e.g. 2026) to backfill from that year only; None uses each
+# project's historical start. Inserts upsert, so re-runs are safe.
+START_YEAR_OVERRIDE = 2026
 ENV_PATH = Path(__file__).resolve().parent / ".env"
 
 PROJECTS = {
@@ -243,7 +247,12 @@ def main():
         for project_code, start_year in PROJECTS.items():
             print(project_code)
             location_id = location_ids[project_code]
-            for year in range(start_year, END_YEAR):
+            loop_start = (
+                START_YEAR_OVERRIDE
+                if START_YEAR_OVERRIDE is not None
+                else start_year
+            )
+            for year in range(loop_start, END_YEAR + 1):
                 print("\t", year)
                 params = {
                     "fr_cdy": year,
