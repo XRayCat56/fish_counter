@@ -13,12 +13,20 @@ from app.schemas.counts import (
     LocationTotalsResponse,
     MonthlyCountPoint,
     MonthlyCountsResponse,
+    LocationYearSeries,
+    SpeciesInfo,
+    SpeciesListResponse,
+    SpeciesLocationCountsResponse,
     SpeciesMonthlySeries,
     SpeciesTotal,
     SpeciesTotalsResponse,
     SpeciesYearSeries,
     YearCountsResponse,
 )
+
+
+class SpeciesNotFoundError(Exception):
+    """Raised when a species code does not exist."""
 
 
 async def get_counts_for_year(db: AsyncSession, year: int) -> YearCountsResponse:
@@ -166,5 +174,72 @@ async def get_species_totals_for_year(
         species=[
             SpeciesTotal(code=code, name=name, total=int(species_total))
             for code, name, species_total in rows
+        ],
+    )
+
+
+async def get_species_list(db: AsyncSession) -> SpeciesListResponse:
+    """Return all species, ordered by name."""
+    stmt = select(Species.code, Species.name).order_by(Species.name)
+    rows = (await db.execute(stmt)).all()
+    return SpeciesListResponse(
+        species=[SpeciesInfo(code=code, name=name) for code, name in rows]
+    )
+
+
+async def get_species_location_counts_for_year(
+    db: AsyncSession, year: int, species_code: str
+) -> SpeciesLocationCountsResponse:
+    """Return daily total counts per dam location for one species and year.
+
+    Locations with no rows for the year are omitted and are ordered
+    downstream to upstream.
+    """
+    species_row = (
+        await db.execute(
+            select(Species.code, Species.name).where(Species.code == species_code)
+        )
+    ).one_or_none()
+    if species_row is None:
+        raise SpeciesNotFoundError(species_code)
+    species_name: str = species_row.name
+
+    start, end = _year_range(year)
+    stmt = (
+        select(
+            Location.code,
+            Location.name,
+            DailyCount.count_date,
+            func.sum(DailyCount.fish_count).label("daily_total"),
+        )
+        .join(Location, Location.id == DailyCount.location_id)
+        .join(Species, Species.id == DailyCount.species_id)
+        .join(CountClass, CountClass.id == DailyCount.class_id)
+        .where(
+            CountClass.code == "total",
+            Species.code == species_code,
+            DailyCount.count_date >= start,
+            DailyCount.count_date < end,
+        )
+        .group_by(
+            Location.code, Location.name, Location.sort_order, DailyCount.count_date
+        )
+        .order_by(Location.sort_order, DailyCount.count_date)
+    )
+    rows = (await db.execute(stmt)).all()
+
+    grouped: dict[tuple[str, str], list[DailyCountPoint]] = {}
+    for code, name, count_date, daily_total in rows:
+        grouped.setdefault((code, name), []).append(
+            DailyCountPoint(date=count_date, count=int(daily_total))
+        )
+
+    return SpeciesLocationCountsResponse(
+        year=year,
+        species_code=species_code,
+        species_name=species_name,
+        locations=[
+            LocationYearSeries(code=code, name=name, counts=points)
+            for (code, name), points in grouped.items()
         ],
     )
