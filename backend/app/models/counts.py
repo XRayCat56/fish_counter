@@ -36,6 +36,19 @@ class CountClass(Base):
     is_total: Mapped[bool] = mapped_column(Boolean, nullable=False)
 
 
+class SpeciesClass(Base):
+    """Which count classes are recorded for which species."""
+
+    __tablename__ = "species_classes"
+
+    species_id: Mapped[int] = mapped_column(
+        SmallInteger, ForeignKey("species.id"), primary_key=True
+    )
+    class_id: Mapped[int] = mapped_column(
+        SmallInteger, ForeignKey("count_classes.id"), primary_key=True
+    )
+
+
 class DailyCount(Base):
     __tablename__ = "daily_counts"
 

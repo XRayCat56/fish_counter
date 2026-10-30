@@ -7,7 +7,7 @@ class DailyCountPoint(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     date: date
-    count: int = Field(description="Daily fish count (summed across dams)")
+    count: int = Field(description="Daily dam passages (summed across dams; a fish is counted at each dam it climbs)")
 
 
 class SpeciesYearSeries(BaseModel):
@@ -23,7 +23,7 @@ class YearCountsResponse(BaseModel):
 
 class MonthlyCountPoint(BaseModel):
     month: int = Field(ge=1, le=12, description="Calendar month (1-12)")
-    count: int = Field(description="Monthly fish count (summed across dams)")
+    count: int = Field(description="Monthly dam passages (summed across dams; a fish is counted at each dam it climbs)")
 
 
 class SpeciesMonthlySeries(BaseModel):
@@ -51,7 +51,7 @@ class LocationTotalsResponse(BaseModel):
 class SpeciesTotal(BaseModel):
     code: str
     name: str
-    total: int = Field(description="Total fish count for the year (all dams)")
+    total: int = Field(description="Total dam passages for the year (all dams; a fish is counted at each dam it climbs)")
 
 
 class SpeciesTotalsResponse(BaseModel):
@@ -62,6 +62,10 @@ class SpeciesTotalsResponse(BaseModel):
 class SpeciesInfo(BaseModel):
     code: str
     name: str
+    class_codes: list[str] = Field(
+        default_factory=list,
+        description="Count classes recorded for this species (total, adult, jack, ...)",
+    )
 
 
 class SpeciesListResponse(BaseModel):
