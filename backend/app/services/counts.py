@@ -6,7 +6,7 @@ from datetime import date
 from sqlalchemy import extract, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.counts import CountClass, DailyCount, Location, Species
+from app.models.counts import CountClass, DailyCount, Location, Species, SpeciesClass
 from app.schemas.counts import (
     DailyCountPoint,
     LocationTotal,
@@ -182,11 +182,27 @@ async def get_species_totals_for_year(
 
 
 async def get_species_list(db: AsyncSession) -> SpeciesListResponse:
-    """Return all species, ordered by name."""
-    stmt = select(Species.code, Species.name).order_by(Species.name)
+    """Return all species, ordered by name, with the count classes each records."""
+    stmt = (
+        select(Species.code, Species.name, CountClass.code)
+        .select_from(Species)
+        .outerjoin(SpeciesClass, SpeciesClass.species_id == Species.id)
+        .outerjoin(CountClass, CountClass.id == SpeciesClass.class_id)
+        .order_by(Species.name, CountClass.id)
+    )
     rows = (await db.execute(stmt)).all()
+
+    class_codes: dict[tuple[str, str], list[str]] = {}
+    for code, name, class_code in rows:
+        codes = class_codes.setdefault((code, name), [])
+        if class_code is not None:
+            codes.append(class_code)
+
     return SpeciesListResponse(
-        species=[SpeciesInfo(code=code, name=name) for code, name in rows]
+        species=[
+            SpeciesInfo(code=code, name=name, class_codes=codes)
+            for (code, name), codes in class_codes.items()
+        ]
     )
 
 

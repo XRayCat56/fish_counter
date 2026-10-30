@@ -12,6 +12,9 @@ import { useYearCounts } from './hooks/useYearCounts'
 import { MAX_YEAR, YEARS } from './constants/years'
 import './App.css'
 
+const PASSAGE_NOTE =
+  'A fish is counted at every dam it climbs, so totals across dams count passages rather than distinct fish. For the size of a run, look at a single dam such as Bonneville.'
+
 function App() {
   const [year, setYear] = useState(MAX_YEAR)
   const daily = useYearCounts(year)
@@ -40,19 +43,24 @@ function App() {
       </header>
 
       <main className="main">
-        <ChartSection title={`${year} totals by species`} loading={totals.loading} error={totals.error}>
+        <ChartSection
+          title={`${year} dam passages by species`}
+          loading={totals.loading}
+          error={totals.error}
+          note={PASSAGE_NOTE}
+        >
           {totals.data && <SpeciesTotals species={totals.data.species} />}
         </ChartSection>
 
-        <ChartSection title="Daily counts" loading={daily.loading} error={daily.error}>
+        <ChartSection title="Daily passages, all dams" loading={daily.loading} error={daily.error} note={PASSAGE_NOTE}>
           {daily.data && <FishCountChart species={daily.data.species} />}
         </ChartSection>
 
-        <ChartSection title="Monthly counts by species" loading={monthly.loading} error={monthly.error}>
+        <ChartSection title="Monthly passages by species, all dams" loading={monthly.loading} error={monthly.error} note={PASSAGE_NOTE}>
           {monthly.data && <MonthlySpeciesBarChart species={monthly.data.species} />}
         </ChartSection>
 
-        <ChartSection title="Totals by dam location" loading={locations.loading} error={locations.error}>
+        <ChartSection title="Passages by dam" loading={locations.loading} error={locations.error}>
           {locations.data && <LocationPieChart locations={locations.data.locations} />}
         </ChartSection>
       </main>

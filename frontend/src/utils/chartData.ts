@@ -74,3 +74,12 @@ export function toYearlyChartRows(locations: LocationYearlyTotals[]): YearlyChar
 
   return Array.from(byYear.values()).sort((a, b) => a.year - b.year)
 }
+
+/** Round `value` up to a tidy axis maximum (1, 1.5, 2, 2.5, ... times a power of ten). */
+export function niceCeil(value: number): number {
+  if (value <= 0) {
+    return 1
+  }
+  const step = 10 ** Math.floor(Math.log10(value)) / 2
+  return Math.ceil(value / step) * step
+}

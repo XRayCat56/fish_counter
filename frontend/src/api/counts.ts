@@ -7,16 +7,7 @@ import type {
   SpeciesYearlyTotalsResponse,
   YearCountsResponse,
 } from '../types'
-
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
-
-async function fetchJson<T>(path: string, errorLabel: string): Promise<T> {
-  const response = await fetch(`${API_URL}${path}`)
-  if (!response.ok) {
-    throw new Error(`${errorLabel} (${response.status})`)
-  }
-  return (await response.json()) as T
-}
+import { fetchJson } from './client'
 
 export function fetchCountsForYear(year: number): Promise<YearCountsResponse> {
   return fetchJson(`/api/counts/${year}`, `Failed to load counts for ${year}`)
